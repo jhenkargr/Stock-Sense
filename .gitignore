@@ -1,0 +1,21 @@
+# React / Node
+node_modules/
+build/
+dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+
+#fastapi
+fastapi/
+
+# VS Code
+.vscode/
+
+#backend
+backend
+
+# OS files
+.DS_Store
+Thumbs.db
