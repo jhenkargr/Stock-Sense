@@ -8,7 +8,9 @@ npm-debug.log*
 yarn-debug.log*
 
 #fastapi
-fastapi/
+.env
+__pycache__/
+*.pyc
 
 # VS Code
 .vscode/
