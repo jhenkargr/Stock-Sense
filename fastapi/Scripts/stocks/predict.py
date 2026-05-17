@@ -629,12 +629,44 @@ def plot(df: pd.DataFrame, test_df: pd.DataFrame,
 # ══════════════════════════════════════════════════════════════
 # MAIN
 # ══════════════════════════════════════════════════════════════
+from .supabase_client import get_supabase_client
+import base64
+import joblib
 
 def main(ticker: str = "RELIANCE.NS", period: str = "5y"):
 
     print(f"\n{'═'*56}")
     print(f"  Indian Stock ML Predictor v2  |  {ticker}")
     print(f"{'═'*56}")
+
+    supabase = get_supabase_client()
+    fname = f"{ticker.replace('.','_')}_rf_v2.pkl"
+    image_name = f"{ticker.replace('.', '_')}_plot.png"
+    json_name = f"{ticker.replace('.', '_')}_result.json"
+    
+    if supabase:
+        try:
+            import json
+            
+            # Ensure 'predict' bucket exists
+            buckets = supabase.storage.list_buckets()
+            # Handle both object attribute and dictionary representations
+            bucket_names = [b.name if hasattr(b, 'name') else b.get('name') for b in buckets]
+            if "predict" not in bucket_names:
+                supabase.storage.create_bucket("predict")
+                print("✅ Created new 'predict' storage bucket.")
+                
+            # Check if JSON result exists in storage
+            files = supabase.storage.from_("predict").list()
+            if isinstance(files, list):
+                file_names = [f["name"] for f in files]
+                if json_name in file_names:
+                    print(f"✅ Found {json_name} in Supabase Storage!")
+                    json_bytes = supabase.storage.from_("predict").download(json_name)
+                    cached_result = json.loads(json_bytes.decode("utf-8"))
+                    return cached_result
+        except Exception as e:
+            print("Supabase check error:", e)
 
     # 1. Build dataset (price + technicals + fundamentals)
     print("\n⚙️   Building dataset …")
@@ -647,21 +679,37 @@ def main(ticker: str = "RELIANCE.NS", period: str = "5y"):
     result = predict(model, df, ticker)
 
     # 4. Save model
-    fname = f"{ticker.replace('.','_')}_rf_v2.pkl"
     joblib.dump(model, fname)
     print(f"\n💾  Model saved → {fname}")
 
     # 5. Dashboard
     fig=plot(df, test_df, y_prob, result, model)
-
-    return{
-        "image": fig_to_base64(fig),
+    img_base64 = fig_to_base64(fig)
+    
+    final_result = {
+        "image": img_base64,
         "ticker": result["ticker"],
         "prob": result["prob"],
         "label": result["label"]
     }
+    
+    if supabase:
+        try:
+            import json
+            # Save to storage bucket instead of table
+            json_bytes = json.dumps(final_result).encode('utf-8')
+            supabase.storage.from_("predict").upload(json_name, json_bytes, {"content-type": "application/json", "upsert": "true"})
+            print(f"✅ Saved prediction data to Supabase Storage as {json_name}")
+            
+            with open(fname, "rb") as f:
+                supabase.storage.from_("predict").upload(fname, f.read(), {"upsert": "true"})
+            img_bytes_raw = base64.b64decode(img_base64)
+            supabase.storage.from_("predict").upload(image_name, img_bytes_raw, {"content-type": "image/png", "upsert": "true"})
+            print("✅ Saved model and image to Supabase Storage (bucket 'predict')")
+        except Exception as e:
+            print("Supabase upload error:", e)
 
-    print(json.dumps({k: v for k, v in result_dict.items() if k != "image"}, indent=2))
+    return final_result
 
 
 import io

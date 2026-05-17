@@ -109,6 +109,36 @@ def run(pdf_path: str, out_format=OUT_FORMAT, save=SAVE_FILE, show=PRINT_TEXT):
         return None
 
     pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
+    symbol = os.path.basename(os.path.dirname(pdf_path))
+    
+    import sys
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    try:
+        from supabase_client import get_supabase_client
+        supabase = get_supabase_client()
+        if supabase:
+            buckets = supabase.storage.list_buckets()
+            bucket_names = [b.name if hasattr(b, 'name') else b.get('name') for b in buckets]
+            if "simplifier" not in bucket_names:
+                supabase.storage.create_bucket("simplifier")
+                
+            files = supabase.storage.from_("simplifier").list(f"documents/{symbol}")
+            if isinstance(files, list):
+                expected_name = f"{pdf_name}_extracted.{out_format}"
+                if expected_name in [f["name"] for f in files]:
+                    print(f"✅ Found {expected_name} in Supabase! Downloading...")
+                    content_bytes = supabase.storage.from_("simplifier").download(f"documents/{symbol}/{expected_name}")
+                    content = content_bytes.decode("utf-8")
+                    if save:
+                        os.makedirs("llm_output", exist_ok=True)
+                        out_path = f"llm_output/{pdf_name}.{out_format}"
+                        with open(out_path, "w", encoding="utf-8") as f:
+                            f.write(content)
+                        print(f"\n✅ Saved → {out_path}")
+                    return content
+    except Exception as e:
+        print("Supabase connection error:", e)
+
     print(f"📄 Extracting: {pdf_path}")
 
     pages = extract_pdf(pdf_path)
@@ -147,6 +177,17 @@ def run(pdf_path: str, out_format=OUT_FORMAT, save=SAVE_FILE, show=PRINT_TEXT):
         print(preview)
         if len(content) > 3000:
             print(f"\n... [{len(content)-3000:,} more chars] ...")
+            
+    try:
+        from supabase_client import get_supabase_client
+        supabase = get_supabase_client()
+        if supabase:
+            expected_name = f"{pdf_name}_extracted.{out_format}"
+            content_bytes = content.encode("utf-8")
+            supabase.storage.from_("simplifier").upload(f"documents/{symbol}/{expected_name}", content_bytes, {"upsert": "true", "content-type": "text/plain"})
+            print("✅ Uploaded extracted text to Supabase Storage (bucket 'simplifier')")
+    except Exception as e:
+        print("Supabase connection error:", e)
 
     return content   # ← pass this directly to any LLM API
 

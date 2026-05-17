@@ -259,6 +259,33 @@ def fetch_and_save_annual_report(symbol: str, email: str, password: str) -> str 
     print("=" * 60)
     print(f"  Annual Report Downloader  —  {symbol.upper()}")
     print("=" * 60)
+    
+    import sys
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    try:
+        from supabase_client import get_supabase_client
+        supabase = get_supabase_client()
+        if supabase:
+            buckets = supabase.storage.list_buckets()
+            bucket_names = [b.name if hasattr(b, 'name') else b.get('name') for b in buckets]
+            if "simplifier" not in bucket_names:
+                supabase.storage.create_bucket("simplifier")
+                print("✅ Created new 'simplifier' storage bucket.")
+                
+            files = supabase.storage.from_("simplifier").list(f"documents/{symbol.upper()}")
+            if isinstance(files, list):
+                pdf_files = [f["name"] for f in files if f["name"].endswith(".pdf")]
+                if pdf_files:
+                    print(f"✅ Found PDF in Supabase! Downloading...")
+                    pdf_bytes = supabase.storage.from_("simplifier").download(f"documents/{symbol.upper()}/{pdf_files[0]}")
+                    save_dir = os.path.join("documents", symbol.upper())
+                    os.makedirs(save_dir, exist_ok=True)
+                    filepath = os.path.join(save_dir, pdf_files[0])
+                    with open(filepath, "wb") as f:
+                        f.write(pdf_bytes)
+                    return filepath
+    except Exception as e:
+        print("Supabase connection error:", e)
 
     # Step 1 – scrape
     report = get_latest_annual_report(symbol, email, password)
@@ -272,6 +299,18 @@ def fetch_and_save_annual_report(symbol: str, email: str, password: str) -> str 
     # Step 2 – download into documents/<symbol>/
     save_dir = os.path.join("documents", symbol.upper())
     filepath = download_pdf(report["pdf_url"], save_dir=save_dir)
+
+    if filepath:
+        try:
+            from supabase_client import get_supabase_client
+            supabase = get_supabase_client()
+            if supabase:
+                filename = os.path.basename(filepath)
+                with open(filepath, "rb") as f:
+                    supabase.storage.from_("simplifier").upload(f"documents/{symbol.upper()}/{filename}", f.read(), {"upsert": "true"})
+                print("✅ Uploaded PDF to Supabase Storage (bucket 'simplifier')")
+        except Exception as e:
+            print("Supabase connection error:", e)
 
     return filepath
 

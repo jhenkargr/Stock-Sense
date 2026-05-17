@@ -388,10 +388,33 @@ def split_text_into_chunks(text, chunk_size_chars):
     return chunks
 
 
-# ═══════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════
 # 🚀  MAIN LOGIC
-# ═══════════════════════════════════════════════
-def analyze_text(extracted_text: str) -> str:
+# ══════════════════════════════════════════════════════════════
+def analyze_text(extracted_text: str, symbol: str = None) -> str:
+    import sys
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    
+    if symbol:
+        try:
+            from supabase_client import get_supabase_client
+            supabase = get_supabase_client()
+            if supabase:
+                buckets = supabase.storage.list_buckets()
+                bucket_names = [b.name if hasattr(b, 'name') else b.get('name') for b in buckets]
+                if "simplifier" not in bucket_names:
+                    supabase.storage.create_bucket("simplifier")
+                    
+                files = supabase.storage.from_("simplifier").list(f"documents/{symbol.upper()}")
+                if isinstance(files, list):
+                    expected_name = f"{symbol.upper()}_analysis.md"
+                    if expected_name in [f["name"] for f in files]:
+                        print(f"✅ Found {expected_name} in Supabase! Downloading...")
+                        content_bytes = supabase.storage.from_("simplifier").download(f"documents/{symbol.upper()}/{expected_name}")
+                        return content_bytes.decode("utf-8")
+        except Exception as e:
+            print("Supabase connection error:", e)
+
     global ACTIVE_MODEL
     if not ACTIVE_MODEL:
         ACTIVE_MODEL = find_working_model()
@@ -490,5 +513,17 @@ def analyze_text(extracted_text: str) -> str:
             if not full_response:
                 print("\n⚠️  Final merge failed. Saving individual chunk analyses instead.")
                 full_response = combined
+
+    if symbol:
+        try:
+            from supabase_client import get_supabase_client
+            supabase = get_supabase_client()
+            if supabase:
+                expected_name = f"{symbol.upper()}_analysis.md"
+                content_bytes = full_response.encode("utf-8")
+                supabase.storage.from_("simplifier").upload(f"documents/{symbol.upper()}/{expected_name}", content_bytes, {"upsert": "true", "content-type": "text/markdown"})
+                print("✅ Uploaded analysis to Supabase Storage (bucket 'simplifier')")
+        except Exception as e:
+            print("Supabase connection error:", e)
 
     return full_response

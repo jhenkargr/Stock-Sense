@@ -38,7 +38,7 @@ def simplify_report(symbol: str = Query(..., description="Ticker symbol e.g. REL
             raise HTTPException(status_code=500, detail="Failed to extract text from the PDF.")
             
         # Step 3: Analyze text with LLM
-        analysis = analyze_text(extracted_text)
+        analysis = analyze_text(extracted_text, symbol=symbol)
         if analysis and analysis.startswith("Error"):
             raise HTTPException(status_code=500, detail=analysis)
             
