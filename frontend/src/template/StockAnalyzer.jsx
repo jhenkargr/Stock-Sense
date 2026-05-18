@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import CashFlowTable from "../components/CashFlowTable";
+import Simplifier from "../components/Simplifier";
+import CompanyOverview from "../components/CompanyOverview";
 
 
-export default function StockAnalyzer({ ticker, stock, info, predict }) {
+export default function StockAnalyzer({ ticker, stock, info }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
-  const [zoomed, setZoomed] = useState(false);
   return (
     <div className="min-h-screen p-4 md:p-8 bg-[#020b12] text-slate-200 ">
       <div className="max-w-6xl mx-auto space-y-8 pb-[190px]">
@@ -47,6 +48,11 @@ export default function StockAnalyzer({ ticker, stock, info, predict }) {
               BUY
             </button>
           </div>
+        </div>
+
+        {/* Company Overview (from port 8002) */}
+        <div>
+          <CompanyOverview symbol={typeof stock === 'string' ? stock : stock?.symbol} />
         </div>
 
         {/* Metrics */}
@@ -115,91 +121,9 @@ export default function StockAnalyzer({ ticker, stock, info, predict }) {
           <CashFlowTable ticker={stock} />
         </div>
 
-        {/* Prediction Chart */}
-        {predict && (() => {
-          const imgSrc =
-            typeof predict === 'string'
-              ? (predict.startsWith('data:') ? predict : `data:image/png;base64,${predict}`)
-              : predict.image
-                ? (predict.image.startsWith('data:') ? predict.image : `data:image/png;base64,${predict.image}`)
-                : '';
-          return (
-            <>
-              <div className="w-full mt-10">
-                <div className="px-2 py-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                    <h3 className="text-[11px] font-black text-cyan-500 tracking-[0.25em] uppercase">
-                      Prediction Forecast
-                    </h3>
-                  </div>
-                  <button
-                    onClick={() => setZoomed(true)}
-                    className="flex items-center gap-2 text-[10px] font-black tracking-[0.15em] uppercase text-cyan-600 border border-cyan-900/50 px-3 py-1.5 rounded hover:border-cyan-500 hover:text-cyan-400 transition-all"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16zM11 8v6M8 11h6" />
-                    </svg>
-                    Zoom
-                  </button>
-                </div>
-                <div className="flex justify-center items-center">
-                  <img
-                    src={imgSrc}
-                    alt="Stock price prediction chart"
-                    onClick={() => setZoomed(true)}
-                    style={{ mixBlendMode: 'lighten' }}
-                    className="w-full h-auto cursor-zoom-in"
-                  />
-                </div>
-              </div>
-
-              {/* Zoom Overlay */}
-              {zoomed && (
-                <div
-                  className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-6"
-                  onClick={() => setZoomed(false)}
-                  onKeyDown={(e) => e.key === 'Escape' && setZoomed(false)}
-                  tabIndex={0}
-                  ref={(el) => el && el.focus()}
-                >
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setZoomed(false); }}
-                    className="absolute top-6 right-6 text-cyan-400 hover:text-cyan-300 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                  <img
-                    src={imgSrc}
-                    alt="Stock price prediction chart — zoomed"
-                    onClick={(e) => e.stopPropagation()}
-                    style={{ mixBlendMode: 'lighten' }}
-                    className="max-w-[95vw] max-h-[90vh] object-contain rounded-lg"
-                  />
-                </div>
-              )}
-            </>
-          );
-        })()}
-
-        {/* AI Analysis */}
-        <div className="border border-cyan-900 bg-slate-900/30 p-8">
-
-          <div className="inline-block bg-cyan-500 text-black px-4 py-1 text-xs font-bold mb-6">
-            AI ANALYSIS
-          </div>
-
-          <p className="leading-relaxed text-slate-300 text-lg pb-90">
-            <strong className="text-white">Apple Inc.</strong> remains a
-            fundamentally dominant company with an exceptional gross profit
-            margin of <span className="text-green-400">43.2%</span>. The P/E
-            ratio of <span className="text-yellow-400">28.4x</span> is slightly
-            elevated but justified given consistent EPS growth and an
-            extraordinary ROE of <span className="text-green-400">147%</span>.
-          </p>
-
+        {/* Simplifier (AI analysis panel) */}
+        <div>
+          <Simplifier symbol={typeof stock === 'string' ? stock : stock?.symbol} />
         </div>
 
       </div>

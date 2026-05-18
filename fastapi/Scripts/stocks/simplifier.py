@@ -1,6 +1,6 @@
 import os
 import uvicorn
-from fastapi import APIRouter, FastAPI, Query, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from stocks.report.downloader import fetch_and_save_annual_report
@@ -10,52 +10,93 @@ from stocks.report.prompt import analyze_text
 router = APIRouter()
 PORT = 8002
 
+
+# ─────────────────────────────────────────────
+#  Supabase helper
+# ─────────────────────────────────────────────
+
+def get_supabase():
+    """Return a Supabase client, or None if unavailable."""
+    try:
+        from stocks.supabase_client import get_supabase_client
+        client = get_supabase_client()
+        if client:
+            buckets = client.storage.list_buckets()
+            names = [b.name if hasattr(b, 'name') else b.get('name') for b in buckets]
+            if "simplifier" not in names:
+                client.storage.create_bucket("simplifier")
+                print("✅ Created 'simplifier' storage bucket.")
+        return client
+    except Exception as e:
+        print(f"Supabase unavailable: {e}")
+        return None
+
+
+# ─────────────────────────────────────────────
+#  API route
+# ─────────────────────────────────────────────
+
 @router.get("/")
-def simplify_report(symbol: str = Query(..., description="Ticker symbol e.g. RELIANCE")):
-    email = os.getenv("mail")
+def simplify_report(symbol: str = Query(..., description="Ticker symbol, e.g. RELIANCE")):
+    email    = os.getenv("mail")
     password = os.getenv("password")
-    
+
     if not email or not password:
         raise HTTPException(status_code=500, detail="Missing Screener credentials in environment.")
-        
-    try:
-        # Check if already processed
-        save_dir = os.path.join("documents", symbol.upper())
-        output_path = os.path.join(save_dir, f"{symbol}_analysis.md")
-        if os.path.exists(output_path):
-            with open(output_path, "r", encoding="utf-8") as f:
-                analysis = f.read()
-            return {"symbol": symbol, "analysis": analysis, "saved_to": output_path, "cached": True}
 
-        # Step 1: Download Report
-        filepath = fetch_and_save_annual_report(symbol, email, password)
-        if not filepath:
-            raise HTTPException(status_code=404, detail=f"Could not find or download report for {symbol}")
-            
-        # Step 2: Extract text from PDF
-        extracted_text = extract_pdf(pdf_path=filepath, out_format="md", save=False, show=False)
-        if not extracted_text:
-            raise HTTPException(status_code=500, detail="Failed to extract text from the PDF.")
-            
-        # Step 3: Analyze text with LLM
-        analysis = analyze_text(extracted_text, symbol=symbol)
-        if analysis and analysis.startswith("Error"):
-            raise HTTPException(status_code=500, detail=analysis)
-            
-        # Save the analysis to the same folder as the PDF
-        save_dir = os.path.dirname(filepath)
-        output_path = os.path.join(save_dir, f"{symbol}_analysis.md")
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(analysis)
-            
-        return {"symbol": symbol, "analysis": analysis, "saved_to": output_path}
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    symbol = symbol.upper()
+    supabase = get_supabase()
 
-def create_app():
+    # 1. Return cached analysis if it exists in Supabase
+    if supabase:
+        try:
+            expected_name = f"{symbol}_cohere_analysis.md"
+            files = supabase.storage.from_("simplifier").list(f"documents/{symbol}")
+            if isinstance(files, list) and expected_name in [f["name"] for f in files]:
+                print(f"✅ Returning cached analysis for {symbol}.")
+                content = supabase.storage.from_("simplifier").download(
+                    f"documents/{symbol}/{expected_name}"
+                ).decode("utf-8")
+                return {"symbol": symbol, "analysis": content, "cached": True}
+        except Exception as e:
+            print(f"Supabase cache check failed: {e}")
+
+    # 2. Download the annual report PDF
+    filepath = fetch_and_save_annual_report(symbol, email, password)
+    if not filepath:
+        raise HTTPException(status_code=404, detail=f"Could not find or download report for {symbol}.")
+
+    # 3. Extract text from the PDF
+    extracted_text = extract_pdf(pdf_path=filepath, out_format="md", save=False, show=False)
+    if not extracted_text:
+        raise HTTPException(status_code=500, detail="Failed to extract text from the PDF.")
+
+    # 4. Analyze with LLM
+    analysis = analyze_text(extracted_text, symbol=symbol)
+    if not analysis or analysis.startswith("Error"):
+        raise HTTPException(status_code=500, detail=analysis or "Analysis failed.")
+
+    # 5. Upload analysis to Supabase
+    if supabase:
+        try:
+            expected_name = f"{symbol}_cohere_analysis.md"
+            supabase.storage.from_("simplifier").upload(
+                f"documents/{symbol}/{expected_name}",
+                analysis.encode("utf-8"),
+                {"upsert": "true", "content-type": "text/markdown"},
+            )
+            print("✅ Uploaded analysis to Supabase.")
+        except Exception as e:
+            print(f"Supabase upload failed: {e}")
+
+    return {"symbol": symbol, "analysis": analysis, "cached": False}
+
+
+# ─────────────────────────────────────────────
+#  App setup
+# ─────────────────────────────────────────────
+
+def create_app() -> FastAPI:
     app = FastAPI()
     app.add_middleware(
         CORSMiddleware,
@@ -66,6 +107,7 @@ def create_app():
     )
     app.include_router(router)
     return app
+
 
 app = create_app()
 

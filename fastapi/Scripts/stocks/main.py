@@ -10,6 +10,7 @@ from stocks.cashflow import router as router2
 from stocks.predict import router as router3
 from stocks.suggestions import router as router4
 from stocks.simplifier import router as router5
+from stocks.marketstatus import router as router6
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -20,6 +21,7 @@ SERVICE_PORTS = {
 	"stocks.metrics:app": 8003,
 	"stocks.predict:app": 8007,
 	"stocks.suggestions:app": 8009,
+    "stocks.marketstatus:app": 8010,
 }
 
 app.include_router(router1, prefix="/metrics")
@@ -27,6 +29,7 @@ app.include_router(router2, prefix="/cashflow")
 app.include_router(router3, prefix="/predict")
 app.include_router(router4, prefix="/suggestion")
 app.include_router(router5, prefix="/simplify")
+app.include_router(router6)
 
 
 app.add_middleware(

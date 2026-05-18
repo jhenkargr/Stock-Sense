@@ -3,12 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "bytez.js": "^3.0.0",
     "chart.js": "^4.4.0",
+    "groq-sdk": "^1.2.0",
     "lucide-react": "^0.577.0",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.13.1"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.13.1",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
