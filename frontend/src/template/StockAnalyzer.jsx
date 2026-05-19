@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CashFlowTable from "../components/CashFlowTable";
 import Simplifier from "../components/Simplifier";
 import CompanyOverview from "../components/CompanyOverview";
@@ -6,6 +6,30 @@ import CompanyOverview from "../components/CompanyOverview";
 
 export default function StockAnalyzer({ ticker, stock, info }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [aiRating, setAiRating] = useState(null);
+  const [loadingRating, setLoadingRating] = useState(false);
+
+  useEffect(() => {
+    const fetchAiRating = async () => {
+      try {
+        setLoadingRating(true);
+        const sym = typeof stock === 'string' ? stock : stock?.symbol;
+        const response = await fetch(`http://localhost:8007/analysis?ticker=${sym}`);
+        const data = await response.json();
+        setAiRating(data?.label?.toUpperCase() || 'N/A');
+      } catch (error) {
+        console.error('Error fetching AI rating:', error);
+        setAiRating('N/A');
+      } finally {
+        setLoadingRating(false);
+      }
+    };
+
+    if (stock) {
+      fetchAiRating();
+    }
+  }, [stock]);
+
   return (
     <div className="min-h-screen p-4 md:p-8 bg-[#020b12] text-slate-200 ">
       <div className="max-w-6xl mx-auto space-y-8 pb-[190px]">
@@ -44,8 +68,12 @@ export default function StockAnalyzer({ ticker, stock, info }) {
               AI Rating
             </div>
 
-            <button className="border-2 border-green-400 text-green-400 px-8 py-2 font-bold hover:bg-green-400/10">
-              BUY
+            <button className={`border-2 px-8 py-2 font-bold transition-all ${
+              aiRating === 'BUY' ? 'border-green-400 text-green-400 hover:bg-green-400/10' :
+              aiRating === 'SELL' ? 'border-red-400 text-red-400 hover:bg-red-400/10' :
+              'border-slate-600 text-slate-400 hover:bg-slate-600/10'
+            }`}>
+              {loadingRating ? 'Loading...' : aiRating || 'N/A'}
             </button>
           </div>
         </div>
