@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import SpaceBackgroundOverlay from "../components/SpaceBackgroundOverlay";
 
 export default function Predict({ ticker, info, predict }) {
   const [zoomed, setZoomed] = useState(false);
@@ -56,7 +57,9 @@ export default function Predict({ ticker, info, predict }) {
         : '';
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-[#020b12] text-slate-200">
+    <>
+      <SpaceBackgroundOverlay />
+      <div className="relative z-10 min-h-screen p-4 md:p-8 bg-[#050b0f]/35 text-slate-200">
       <div className="max-w-6xl mx-auto space-y-8 pb-[190px]">
         {/* Header */}
         <div className="bg-slate-900/40 border-l-4 border-cyan-500 p-8 flex flex-col md:flex-row justify-between">
@@ -173,6 +176,7 @@ export default function Predict({ ticker, info, predict }) {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

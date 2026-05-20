@@ -99,17 +99,6 @@ function AnalysePage() {
 
   return (
     <main className="relative z-10 max-w-7xl mx-auto px-6 py-14 md:py-20">
-      <section className="text-center max-w-3xl mx-auto mt-8 md:mt-14 mb-12">
-        <p className="text-[11px] md:text-xs tracking-[0.5em] uppercase font-black text-cyan-500/80 mb-4">
-          Detailed Stock Analyser
-        </p>
-        <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-none uppercase text-white">
-          Search a stock to inspect the full report
-        </h2>
-        <p className="mt-5 text-sm md:text-base text-cyan-100/70 tracking-wide">
-          Enter a ticker below to load live data, company overview, AI simplifier output, and fundamentals.
-        </p>
-      </section>
       <SearchBar onSearch={handleSearch} />
 
       <div className="mt-12 md:mt-16">

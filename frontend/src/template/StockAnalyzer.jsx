@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import SpaceBackgroundOverlay from "../components/SpaceBackgroundOverlay";
 import CashFlowTable from "../components/CashFlowTable";
 import Simplifier from "../components/Simplifier";
 import CompanyOverview from "../components/CompanyOverview";
@@ -31,7 +32,9 @@ export default function StockAnalyzer({ ticker, stock, info }) {
   }, [stock]);
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-[#020b12] text-slate-200 ">
+    <>
+      <SpaceBackgroundOverlay />
+      <div className="relative z-10 min-h-screen p-4 md:p-8 bg-[#050b0f]/35 text-slate-200 ">
       <div className="max-w-6xl mx-auto space-y-8 pb-[190px]">
 
 
@@ -155,7 +158,8 @@ export default function StockAnalyzer({ ticker, stock, info }) {
         </div>
 
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

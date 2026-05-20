@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
+import SpaceBackgroundOverlay from "./SpaceBackgroundOverlay";
 
 const QUICK_TICKERS = [
   { symbol: "RELIANCE", name: "Reliance Industries" },
@@ -169,12 +170,26 @@ const SearchBar = ({ onSearch }) => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      ref={dropdownRef}
-      className="max-w-2xl mx-auto relative group"
-    >
-      <div className="flex items-stretch border border-cyan-900/50 bg-black/80 rounded overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] focus-within:border-cyan-500/50 transition-all duration-300">
+    <div className="relative isolate max-w-2xl mx-auto group">
+      <SpaceBackgroundOverlay />
+      <section className="relative z-10 mb-6 text-center max-w-2xl mx-auto">
+        <p className="text-[11px] md:text-xs tracking-[0.5em] uppercase font-black text-cyan-500/80 mb-3">
+          Detailed Stock Analyser
+        </p>
+        <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase text-white max-w-none">
+          Search a stock to inspect the full report
+        </h2>
+        <p className="mt-4 text-sm md:text-base text-cyan-100/70 tracking-wide">
+          Enter a ticker below to load live data, company overview, AI simplifier output, and fundamentals.
+        </p>
+      </section>
+
+      <form
+        onSubmit={handleSubmit}
+        ref={dropdownRef}
+        className="relative z-10"
+      >
+        <div className="flex items-stretch border border-cyan-900/50 bg-black/80 rounded overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] focus-within:border-cyan-500/50 transition-all duration-300">
 
         {/* Left Label */}
         <div className="px-6 py-5 flex items-center justify-center bg-cyan-950/10 border-r border-cyan-900/50">
@@ -207,7 +222,7 @@ const SearchBar = ({ onSearch }) => {
         >
           ANALYSE
         </button>
-      </div>
+        </div>
 
       {/* Suggestions */}
       {suggestions.length > 0 && (
@@ -261,7 +276,8 @@ const SearchBar = ({ onSearch }) => {
           </button>
         ))}
       </div>
-    </form>
+      </form>
+    </div>
   );
 };
 
