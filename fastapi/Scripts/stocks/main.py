@@ -29,7 +29,7 @@ app.include_router(router2, prefix="/cashflow")
 app.include_router(router3, prefix="/predict")
 app.include_router(router4, prefix="/suggestion")
 app.include_router(router5, prefix="/simplify")
-app.include_router(router6)
+app.include_router(router6, prefix="/marketstatus")
 
 
 app.add_middleware(

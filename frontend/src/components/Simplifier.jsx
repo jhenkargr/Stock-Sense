@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+const REQUEST_BASE =
+  (import.meta.env.VITE_REQUEST_URL || "http://localhost:8006").startsWith("http")
+    ? import.meta.env.VITE_REQUEST_URL || "http://localhost:8006"
+    : `http://${import.meta.env.VITE_REQUEST_URL || "localhost:8006"}`;
+
 export default function Simplifier({ symbol }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,9 +19,7 @@ export default function Simplifier({ symbol }) {
       try {
         setLoading(true);
 
-        const response = await fetch(
-          `http://127.0.0.1:8002/?symbol=${symbol}`
-        );
+        const response = await fetch(`${REQUEST_BASE}/simplify/?symbol=${symbol}`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch analysis");

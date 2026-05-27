@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
 
+const REQUEST_BASE =
+  (import.meta.env.VITE_REQUEST_URL || "http://localhost:8006").startsWith("http")
+    ? import.meta.env.VITE_REQUEST_URL || "http://localhost:8006"
+    : `http://${import.meta.env.VITE_REQUEST_URL || "localhost:8006"}`;
+
 const HIGHLIGHT_ROWS = ["Free Cash Flow", "Operating Cash Flow"];
 
 function fmt(val) {
@@ -29,8 +34,7 @@ export default function CashFlowTable({ ticker }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`http://localhost:8001/stocks?ticker=${symbol}`);
-      console.log("connected")
+      const res = await fetch(`${REQUEST_BASE}/cashflow/stocks?ticker=${symbol}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setCf({ symbol: symbol, currency: "INR", data: json });

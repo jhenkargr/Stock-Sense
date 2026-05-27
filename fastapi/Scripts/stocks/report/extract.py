@@ -131,10 +131,6 @@ def run(pdf_path: str, out_format: str = "md", save: bool = True, show: bool = F
     - save: save output file locally under documents/<symbol>/
     - show: print a preview to the console
     """
-    if not os.path.exists(pdf_path):
-        print(f"❌ File not found: {pdf_path}")
-        return None
-
     pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
     symbol   = os.path.basename(os.path.dirname(pdf_path))
     expected_name = f"{pdf_name}_extracted.{out_format}"
@@ -158,6 +154,10 @@ def run(pdf_path: str, out_format: str = "md", save: bool = True, show: bool = F
                 return content
         except Exception as e:
             print(f"Supabase check failed: {e}")
+
+    if not os.path.exists(pdf_path):
+        print(f"❌ File not found: {pdf_path}")
+        return None
 
     # Extract from PDF
     print(f"📄 Extracting: {pdf_path}")

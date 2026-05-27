@@ -3,6 +3,11 @@ import { useClock } from '../hooks/useClock'
 import { Link } from 'react-router-dom'
 import React, { useEffect, useState } from 'react';
 
+const REQUEST_BASE =
+  (import.meta.env.VITE_REQUEST_URL || "http://localhost").startsWith("http")
+    ? import.meta.env.VITE_REQUEST_URL || "http://localhost"
+    : `https://${import.meta.env.VITE_REQUEST_URL || "localhost"}`;
+
 const VERSION = "V2.4";
 
 const Header = () => {
@@ -12,7 +17,7 @@ const Header = () => {
   useEffect(() => {
     const fetchMarketStatus = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8010/api/nse-status")
+        const response = await fetch(`${REQUEST_BASE}:8010/api/nse-status`)
 
         if (!response.ok) {
           return
