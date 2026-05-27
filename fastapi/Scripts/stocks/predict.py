@@ -393,8 +393,8 @@ def predict(model, df: pd.DataFrame, ticker: str) -> dict:
 
     if   prob >= STRONG_BUY : label = "🟢  STRONG BUY"
     elif prob >= BUY_PROB   : label = "🔵  BUY"
-    elif prob >= NEUTRAL    : label = "🟡  NEUTRAL"
-    else                    : label = "🔴  SELL / HOLD"
+    elif prob >= NEUTRAL    : label = "🟡  HOLD"
+    else                    : label = "🔴  SELL"
 
     sep = "═" * 56
     print(f"\n{sep}")
