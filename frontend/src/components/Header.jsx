@@ -17,7 +17,7 @@ const Header = () => {
   useEffect(() => {
     const fetchMarketStatus = async () => {
       try {
-        const response = await fetch(`${REQUEST_BASE}:8010/api/nse-status`)
+        const response = await fetch(`${REQUEST_BASE}/marketstatus/api/nse-status`)
 
         if (!response.ok) {
           return
