@@ -15,9 +15,8 @@ fastapi/Include/
 fastapi/Lib/
 fastapi/share/
 fastapi/pyvenv.cfg
-fastapi/Scripts/*
-!fastapi/Scripts/stocks/
-!fastapi/Scripts/requirements.txt
+
+
 !fastapi/Scripts/activate.bat
 
 # VS Code
