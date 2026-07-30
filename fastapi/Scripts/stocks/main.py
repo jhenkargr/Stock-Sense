@@ -19,12 +19,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 app.include_router(router1, prefix="/metrics")
 app.include_router(router2, prefix="/cashflow")
 app.include_router(router3, prefix="/predict")
 app.include_router(router4, prefix="/suggestion")
 app.include_router(router5, prefix="/simplify")
 app.include_router(router6, prefix="/marketstatus")
+
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "StockSense API is running"}
 
 if __name__ == "__main__":
     import uvicorn
