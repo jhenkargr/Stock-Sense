@@ -21,21 +21,36 @@ HEADERS = {
     "Connection": "keep-alive",
 }
 
-@router.get("/api/nse-status", response_model=dict[str, str])
+@router.get("/api/nse-status")
 def nse_status():
-    """
-    Fetches the current market status from the National Stock Exchange of India (NSE).
-    """
     try:
-        response = requests.get(
-        "https://www.nseindia.com/api/marketStatus",
-        headers={"User-Agent": "Mozilla/5.0"}
-    )
+        session = requests.Session()
+
+        # Visit home page first to get cookies
+        session.get(
+            "https://www.nseindia.com",
+            headers=HEADERS,
+            timeout=10
+        )
+
+        response = session.get(
+            "https://www.nseindia.com/api/marketStatus",
+            headers=HEADERS,
+            timeout=10
+        )
+
+        response.raise_for_status()
+
         data = response.json()
-        
-        return {item['market']: item['marketStatus'] for item in data['marketState']}
+
+        return {
+            item["market"]: item["marketStatus"]
+            for item in data["marketState"]
+        }
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 PORT = 8010
 
