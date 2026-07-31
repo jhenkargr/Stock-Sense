@@ -27,7 +27,7 @@
 **StockSense** is a premium, AI-powered stock analysis and forecast platform designed for the Indian Stock Market (NSE). Featuring a modern dark terminal-style interface with rich micro-animations, glassmorphism, and 3D backgrounds, it bridges the gap between deep quantitative analytics and natural language insights. 
 
 <p align="center">
-  <img src="path/to/stocksense_dashboard_hero.png" alt="StockSense Main Dashboard Banner" width="100%" />
+  <img src="./frontend/images/home.png" alt="StockSense Main Dashboard Banner" width="100%" />
 </p>
 
 The platform downloads daily historical prices and quarterly fundamental statements directly to train custom machine learning models on-the-fly and generates comprehensive financial reports. By utilizing a high-performance **FastAPI microservices gateway** and a **React 18 single-page application**, StockSense empowers retail investors with professional-grade institutional research tools.
@@ -41,7 +41,9 @@ The platform downloads daily historical prices and quarterly fundamental stateme
     <td width="50%" valign="top">
       <h3>🔍 Detailed Stock Analyzer</h3>
       <p align="center">
-        <img src="path/to/stock_analyzer_screenshot.png" alt="Detailed Stock Analyzer Screen" width="100%"/>
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 8px;">
+          <img src="./frontend/images/metrics.png" alt="Detailed Stock Analyzer Screen" width="100%"/>
+        </div>
       </p>
       <ul>
         <li><strong>Live Market Telemetry:</strong> Instant feeds for stock price, daily variations, percentage swings, and exchange sectors (via <code>yfinance</code>).</li>
@@ -53,7 +55,9 @@ The platform downloads daily historical prices and quarterly fundamental stateme
     <td width="50%" valign="top">
       <h3>📄 Annual Report Simplifier</h3>
       <p align="center">
-        <img src="path/to/report_simplifier_screenshot.png" alt="Annual Report Simplifier Screen" width="100%"/>
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 8px;">
+          <img src="./frontend/images/report.png" alt="Annual Report Simplifier Screen" width="100%"/>
+        </div>
       </p>
       <ul>
         <li><strong>Automated PDF Extraction:</strong> Fetches complete Annual Reports from Screener.in on-demand and extracts text layouts.</li>
@@ -67,7 +71,9 @@ The platform downloads daily historical prices and quarterly fundamental stateme
     <td width="50%" valign="top">
       <h3>📊 Cash Flow Statement Analysis</h3>
       <p align="center">
-        <img src="path/to/cash_flow_screenshot.png" alt="Cash Flow Statement Analysis Screen" width="100%"/>
+        <div style="height: 400px; border: 0px solid rgba(6, 182, 212, 0.3); border-radius: 8px; text-align: center; padding-top: 10px; box-sizing: border-box;">
+          <img src="./frontend/images/cashflow.png" alt="Cash Flow Statement Analysis Screen" style="max-height: 380px; max-width: 95%; padding-top: 90px;" />
+        </div>
       </p>
       <ul>
         <li><strong>Scaled Visual Reporting:</strong> Pulls annual cash flow parameters scaled specifically in <strong>₹ Crores</strong> (representing Indian standard scale).</li>
@@ -78,7 +84,9 @@ The platform downloads daily historical prices and quarterly fundamental stateme
     <td width="50%" valign="top">
       <h3>🔮 AI-Based Stock Predictor</h3>
       <p align="center">
-        <img src="path/to/stock_predictor_screenshot.png" alt="AI-Based Stock Predictor Screen" width="100%"/>
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 8px;">
+          <img src="./frontend/images/analyzer.png" alt="AI-Based Stock Predictor Screen" width="100%"/>
+        </div>
       </p>
       <ul>
         <li><strong>40-Feature Classification Engine:</strong> Combines 24 technical indicators (Trend, Momentum, Volatility, Volume) and 16 fundamental ratios.</li>
@@ -96,7 +104,7 @@ The platform downloads daily historical prices and quarterly fundamental stateme
 StockSense is built upon a high-concurrency, asynchronous microservices architecture that splits heavy ML training and web scraping into dedicated API processes managed by a central gateway.
 
 <p align="center">
-  <img src="./stocksense_architecture.png" alt="StockSense Microservices Architecture Flowchart" width="100%" />
+  <img src="./frontend/images/stocksense_architecture.png" alt="StockSense Microservices Architecture Flowchart" width="100%" />
 </p>
 
 
