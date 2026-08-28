@@ -1,4 +1,4 @@
-import nest_asyncio
+
 import uvicorn
 import requests
 import time
@@ -7,7 +7,7 @@ import threading
 from fastapi import APIRouter, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-nest_asyncio.apply()
+
 
 router = APIRouter()
 
