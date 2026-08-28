@@ -213,7 +213,7 @@ router = APIRouter()
 app=FastAPI()
 PORT = 8003
 
-nest_asyncio.apply()
+
 
 
 
