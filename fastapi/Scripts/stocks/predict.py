@@ -726,7 +726,7 @@ def fig_to_base64(fig):
     return img_base64
 
 
-import nest_asyncio
+
 import uvicorn
 from fastapi import APIRouter, FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -735,7 +735,7 @@ from typing import Annotated
 import yfinance as yf
 import pandas as pd
 
-nest_asyncio.apply()
+
 
 router = APIRouter()
 PORT = 8007
