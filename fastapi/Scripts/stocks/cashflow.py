@@ -1,4 +1,4 @@
-import nest_asyncio
+
 import uvicorn
 from fastapi import APIRouter, FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +7,7 @@ from typing import Annotated
 import yfinance as yf
 import pandas as pd
 
-nest_asyncio.apply()
+
 
 router = APIRouter()
 PORT = 8001
