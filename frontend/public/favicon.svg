@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#040d1a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="lineGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="55%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#22d3ee" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+
+  <!-- High-tech dark container with subtle border -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#bgGrad)" stroke="#0ea5e9" stroke-width="2.5" stroke-opacity="0.5"/>
+
+  <!-- Candlestick bar 1 -->
+  <line x1="18" y1="34" x2="18" y2="46" stroke="#0891b2" stroke-width="2" stroke-linecap="round"/>
+  <rect x="15" y="37" width="6" height="6" rx="1.5" fill="#06b6d4" fill-opacity="0.8"/>
+
+  <!-- Candlestick bar 2 -->
+  <line x1="30" y1="24" x2="30" y2="42" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/>
+  <rect x="27" y="28" width="6" height="10" rx="1.5" fill="#22d3ee" fill-opacity="0.85"/>
+
+  <!-- Candlestick bar 3 -->
+  <line x1="42" y1="16" x2="42" y2="36" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+  <rect x="39" y="20" width="6" height="12" rx="1.5" fill="#10b981" fill-opacity="0.9"/>
+
+  <!-- Ascending growth vector / pulse line -->
+  <path d="M12 44 Q 22 40, 29 30 T 50 14" fill="none" stroke="url(#lineGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+
+  <!-- Dynamic arrow header -->
+  <polyline points="43 14, 50 14, 50 21" fill="none" stroke="#34d399" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+</svg>

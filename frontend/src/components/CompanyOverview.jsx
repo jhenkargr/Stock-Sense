@@ -2,12 +2,21 @@ import React, { useEffect, useState } from 'react';
 import Groq from 'groq-sdk';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
+const preferredModel = import.meta.env.VITE_GROQ_MODEL;
+
+// Active models with fallback cascade
+const CANDIDATE_MODELS = [
+  preferredModel,
+  'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b',
+  'qwen/qwen3.8-27b',
+].filter(Boolean);
 
 export default function CompanyOverview({ symbol }) {
   const [overview, setOverview] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
 
   const sym = typeof symbol === 'string'
     ? symbol
@@ -30,18 +39,23 @@ export default function CompanyOverview({ symbol }) {
           dangerouslyAllowBrowser: true  // required for client-side usage
         });
 
-        const completion = await groq.chat.completions.create({
-          model: 'llama-3.3-70b-versatile',
-          temperature: 0.4,
-          max_tokens: 800,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a professional equity research analyst.'
-            },
-            {
-              role: 'user',
-              content: `
+        let content = '';
+        let lastError = null;
+
+        for (const model of CANDIDATE_MODELS) {
+          try {
+            const completion = await groq.chat.completions.create({
+              model: model,
+              temperature: 0.4,
+              max_tokens: 800,
+              messages: [
+                {
+                  role: 'system',
+                  content: 'You are a professional equity research analyst.'
+                },
+                {
+                  role: 'user',
+                  content: `
 Give a professional Company Overview for ${sym} stock.
 
 Format:
@@ -52,12 +66,25 @@ Format:
 - Industry position
 
 Keep it professional and concise.
-              `
-            }
-          ]
-        });
+                  `
+                }
+              ]
+            });
 
-        const content = completion.choices?.[0]?.message?.content || '';
+            content = completion.choices?.[0]?.message?.content || '';
+            if (content) {
+              break;
+            }
+          } catch (err) {
+            lastError = err;
+            console.warn(`Groq model ${model} failed, attempting next candidate:`, err.message);
+          }
+        }
+
+        if (!content) {
+          throw lastError || new Error('Failed to generate company overview.');
+        }
+
         setOverview(content);
 
       } catch (err) {
@@ -68,7 +95,7 @@ Keep it professional and concise.
     };
 
     fetchOverview();
-  }, [sym, groqApiKey]);
+  }, [sym]);
 
   if (loading) {
     return (

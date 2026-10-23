@@ -3,37 +3,55 @@ import { useClock } from '../hooks/useClock'
 import { Link } from 'react-router-dom'
 import React, { useEffect, useState } from 'react';
 
-const REQUEST_BASE =
-  (import.meta.env.VITE_REQUEST_URL || "http://localhost").startsWith("http")
-    ? import.meta.env.VITE_REQUEST_URL || "http://localhost"
-    : `https://${import.meta.env.VITE_REQUEST_URL || "localhost"}`;
+const rawUrl = import.meta.env.VITE_REQUEST_URL || "http://localhost:8006";
+const REQUEST_BASE = rawUrl.startsWith("http")
+  ? rawUrl
+  : rawUrl.includes("localhost") || rawUrl.includes("127.0.0.1")
+  ? `http://${rawUrl}`
+  : `https://${rawUrl}`;
 
 const VERSION = "V2.4";
 
+// Calculate market status based on NSE trading hours (Mon-Fri 09:15 - 15:30 IST)
+const getIstMarketStatus = () => {
+  const now = new Date();
+  // Get time in IST (UTC + 5:30)
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const ist = new Date(utc + 5.5 * 3600000);
+  const day = ist.getDay(); // 0 = Sunday, 6 = Saturday
+  const minutes = ist.getHours() * 60 + ist.getMinutes();
+  const isOpen = day >= 1 && day <= 5 && minutes >= 555 && minutes <= 930;
+  return isOpen ? "Open" : "Closed";
+};
+
 const Header = () => {
-  const time = useClock()
-  const [marketStatus, setMarketStatus] = useState("Closed")
+  const time = useClock();
+  const [marketStatus, setMarketStatus] = useState(getIstMarketStatus);
 
   useEffect(() => {
     const fetchMarketStatus = async () => {
       try {
-        const response = await fetch(`${REQUEST_BASE}/marketstatus/api/nse-status`)
+        const response = await fetch(`${REQUEST_BASE}/marketstatus/api/nse-status`);
 
-        if (!response.ok) {
-          return
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data["Capital Market"]) {
+            setMarketStatus(data["Capital Market"]);
+            return;
+          }
         }
-
-        const data = await response.json()
-        setMarketStatus(data?.["Capital Market"] || "Closed")
+        setMarketStatus(getIstMarketStatus());
       } catch {
-        setMarketStatus("Closed")
+        setMarketStatus(getIstMarketStatus());
       }
-    }
+    };
 
-    fetchMarketStatus()
-  }, [])
+    fetchMarketStatus();
+    const interval = setInterval(fetchMarketStatus, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const isMarketOpen = marketStatus.toLowerCase() === "open"
+  const isMarketOpen = marketStatus.toLowerCase() === "open";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-cyan-950/30 bg-black/40 backdrop-blur-md px-8 py-5 flex justify-between items-center">

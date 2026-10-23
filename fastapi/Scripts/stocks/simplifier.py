@@ -60,6 +60,18 @@ def simplify_report(symbol: str = Query(..., description="Ticker symbol, e.g. RE
                     content = supabase.storage.from_("simplifier").download(
                         f"documents/{symbol}/{expected_name}"
                     ).decode("utf-8")
+                    
+                    # Save cached analysis locally as well
+                    try:
+                        local_dir = os.path.join("documents", symbol)
+                        os.makedirs(local_dir, exist_ok=True)
+                        local_path = os.path.join(local_dir, expected_name)
+                        with open(local_path, "w", encoding="utf-8") as f:
+                            f.write(content)
+                        print(f"✅ Saved cached analysis locally to {local_path}")
+                    except Exception as e:
+                        print(f"⚠️ Failed to save cached analysis locally: {e}")
+                        
                     return {"symbol": symbol, "analysis": content, "cached": True}
                 
                 # Check for cached extracted text to bypass PDF download/extraction
@@ -92,6 +104,17 @@ def simplify_report(symbol: str = Query(..., description="Ticker symbol, e.g. RE
     analysis = analyze_text(extracted_text, symbol=symbol)
     if not analysis or analysis.startswith("Error"):
         raise HTTPException(status_code=500, detail=analysis or "Analysis failed.")
+
+    # Save newly generated analysis locally
+    try:
+        local_dir = os.path.join("documents", symbol)
+        os.makedirs(local_dir, exist_ok=True)
+        local_path = os.path.join(local_dir, f"{symbol}_cohere_analysis.md")
+        with open(local_path, "w", encoding="utf-8") as f:
+            f.write(analysis)
+        print(f"✅ Saved newly generated analysis locally to {local_path}")
+    except Exception as e:
+        print(f"⚠️ Failed to save analysis locally: {e}")
 
     # 5. Upload analysis to Supabase
     if supabase:
